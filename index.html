@@ -1,200 +1,855 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>QR-Based Automated Medicine Box</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MedBox — Gentle Pharmacy · QR Automated Medicine System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <!-- QR Generator -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(145deg, #f0f9ff 0%, #e6f4fa 100%);
+  color: #1f2e3a;
+  line-height: 1.5;
+  min-height: 100vh;
+}
 
-    <!-- Particles JS -->
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+/* soft sky / pharmacy gradient background */
+.bg-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 10% 20%, rgba(165, 216, 255, 0.4) 0%, rgba(200, 230, 250, 0.2) 80%);
+  pointer-events: none;
+  z-index: -2;
+}
 
-    <!-- Meta viewport for responsive -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+.bg-soft {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(125deg, #f9feff 0%, #ecf7fc 100%);
+  z-index: -3;
+}
 
-    <style>
-        html, body {margin:0; padding:0; height:100%; font-family:'Segoe UI', sans-serif; overflow-x:hidden; scroll-behavior: smooth; background: linear-gradient(135deg, #eef2f3, #d9e4f5);}
-        #particles-js{position:fixed;width:100%;height:100%;z-index:-2;}
+/* smooth glassmorphism with pastel touch */
+.glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(110, 185, 225, 0.25);
+  border-radius: 2rem;
+  box-shadow: 0 20px 35px -12px rgba(0, 60, 80, 0.08);
+  transition: all 0.2s ease;
+}
 
-        .navbar{background:#1f3c88;padding:18px 50px;color:white;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;flex-wrap:wrap;}
-        .nav-links{display:flex;flex-wrap:wrap;}
-        .nav-links a{color:white;margin-left:25px;text-decoration:none;font-size:14px;transition:all 0.3s;}
-        .nav-links a:hover{color:#2ecc71;text-decoration:underline;}
+/* navigation */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2.5rem;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(80, 160, 210, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  font-weight: 500;
+}
 
-        .hero{text-align:center;padding:80px 20px;animation:fadeIn 1.5s ease-in-out;}
-        .hero h1{font-size:32px;color:#1f3c88;}
-        .hero p{width:60%;margin:15px auto;font-size:17px;color:#555;}
-        .btn{padding:14px 28px;margin:10px;border:none;border-radius:30px;cursor:pointer;font-size:15px;color:white;transition:all 0.4s ease;box-shadow:0 8px 20px rgba(0,0,0,0.15);}
-        .btn:hover{transform:translateY(-5px) scale(1.05);box-shadow:0 15px 30px rgba(0,0,0,0.25);}
-        .doctor{background:#27ae60;}
-        .patient{background:#2980b9;}
-        .action{background:#34495e;}
+.nav-logo {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: linear-gradient(130deg, #2b7a9c, #4fb0d0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-        .section{display:none;text-align:center;padding:50px 20px;}
-        .card{background:white;max-width:650px;margin:30px auto;padding:35px;border-radius:20px;box-shadow:0 25px 50px rgba(0,0,0,0.15);transition:all 0.5s ease;}
+.nav-logo i {
+  background: linear-gradient(135deg, #3590b5, #57c0e0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 1.7rem;
+}
 
-        input{width:85%;padding:12px;margin:12px 0;border-radius:8px;border:1px solid #ccc;transition:all 0.3s;}
-        /* Responsive input */
-        @media (max-width:600px){ input{width:95%;} }
+.nav-links {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
 
-        /* Medicine Cards */
-        .medicine-container{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-top:20px;}
-        .medicine-card{width:150px;background:#f4f8fb;border-radius:15px;padding:15px;cursor:pointer;transition:0.3s;border:3px solid transparent;text-align:center;}
-        .medicine-card img{width:100px;height:100px;object-fit:cover;border-radius:10px;}
-        .medicine-card:hover{transform:scale(1.05);}
-        .medicine-card.selected{border:4px solid #2ecc71;background:#eafaf1;box-shadow:0 12px 30px rgba(0,0,0,0.25);animation:sparkle 0.6s ease-in-out;}
+.nav-links a {
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #3a5a6e;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  transition: all 0.2s;
+}
 
-        /* Duration Cards */
-        .duration-container{display:flex;justify-content:center;gap:20px;margin-top:15px;flex-wrap:wrap;}
-        .duration-card{padding:15px 25px;background:#f4f8fb;border-radius:30px;cursor:pointer;transition:0.3s;border:3px solid transparent;font-weight:bold;text-align:center;}
-        .duration-card:hover{transform:scale(1.15);box-shadow:0 10px 25px rgba(0,0,0,0.2);}
-        .duration-card.selected{border:4px solid #2980b9;background:#d6eaf8;font-weight:bold;}
+.nav-links a:hover {
+  background: rgba(79, 176, 208, 0.12);
+  color: #19647e;
+}
 
-        #qrcode{margin-top:20px;padding:20px;background:#f4f8fb;border-radius:15px;display:inline-block;transition:all 0.3s ease;}
-        #qrcode:hover{transform:scale(1.05);box-shadow:0 0 25px #2980b9;}
+.nav-pill {
+  background: linear-gradient(110deg, #2b9bbb, #53b9df);
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(43, 155, 187, 0.25);
+}
 
-        #instructions{background:#e8f6ff;color:#154360;padding:20px;border-radius:10px;margin-top:20px;display:none;font-weight:bold;}
-        #instructions::before{content:"💊 Medication Instructions 💊";display:block;font-size:16px;font-weight:bold;margin-bottom:10px;}
+.nav-pill:hover {
+  background: linear-gradient(110deg, #2387a3, #3fa5cc);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(43, 155, 187, 0.3);
+}
 
-        .team-box{position:fixed;left:10px;top:150px;background:rgba(255,255,255,0.95);padding:20px;border-radius:10px;font-size:14px;color:#1f3c88;z-index:999;}
-        /* Responsive team-box */
-        @media(max-width:600px){ .team-box{position:relative;top:10px;left:auto;margin-bottom:20px;} }
+/* hero */
+.hero {
+  text-align: center;
+  padding: 4rem 2rem 5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
 
-        footer{background:#1f3c88;color:white;text-align:center;padding:30px;margin-top:50px;}
-        .social i{margin:0 15px;font-size:22px;cursor:pointer;}
-        .social i:hover{color:#2ecc71;transform:scale(1.3) rotate(10deg);}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(75, 185, 210, 0.12);
+  padding: 0.3rem 1.2rem;
+  border-radius: 40px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2b7a9c;
+  letter-spacing: 0.03em;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(65, 165, 190, 0.3);
+}
 
-        body::before,body::after{content:"";position:fixed;top:0;width:300px;height:100%;background:url('https://images.unsplash.com/photo-1588776814546-ec7e5d3a4c0f?auto=format&fit=crop&w=400&q=60') no-repeat center;background-size:cover;opacity:0.07;z-index:-1;}
-        body::before{left:0;} body::after{right:0;transform:scaleX(-1);}
+.hero-badge i {
+  font-size: 0.8rem;
+  color: #40b0d0;
+}
 
-        @keyframes fadeIn{from{opacity:0; transform:translateY(20px);}to{opacity:1; transform:translateY(0);}}
-        @keyframes sparkle{0%{box-shadow:0 0 0px #2ecc71;}50%{box-shadow:0 0 15px #2ecc71;}100%{box-shadow:0 0 0px #2ecc71;}}
-    </style>
+.hero h1 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 4.3rem);
+  font-weight: 800;
+  background: linear-gradient(125deg, #195e7a, #328cad, #59bbdb);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.hero p {
+  max-width: 560px;
+  margin: 1.4rem auto 0;
+  color: #4c6e82;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.8rem;
+  border-radius: 3rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  background: white;
+  color: #1d5c78;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.02);
+}
+
+.btn-primary {
+  background: linear-gradient(115deg, #2b9bbb, #48b3da);
+  color: white;
+  box-shadow: 0 8px 20px rgba(43, 155, 187, 0.25);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(115deg, #2389a8, #3fa1c7);
+  box-shadow: 0 14px 28px rgba(43, 155, 187, 0.3);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #bcddee;
+  color: #216d8a;
+}
+
+.btn-secondary:hover {
+  background: white;
+  border-color: #79bfdd;
+  transform: translateY(-2px);
+}
+
+.hero-cta {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 2.2rem 0 2.8rem;
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3rem;
+  margin-top: 2rem;
+}
+
+.stat-num {
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(130deg, #2b7a9c, #3f9fc2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6592a8;
+  font-weight: 500;
+}
+
+/* sections */
+.section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+}
+
+.section-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  color: #3f9fc2;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+  color: #174f69;
+  margin-bottom: 2rem;
+}
+
+.section-title span {
+  background: linear-gradient(120deg, #2b9bbb, #60bada);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* steps */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.step-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
+  border-radius: 1.8rem;
+  padding: 1.8rem 1.5rem;
+  border: 1px solid rgba(100, 185, 215, 0.3);
+  transition: all 0.25s;
+}
+
+.step-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.85);
+  border-color: #88cbeb;
+  box-shadow: 0 20px 30px -12px rgba(43, 155, 187, 0.15);
+}
+
+.step-num {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: rgba(43, 155, 187, 0.25);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.step-icon {
+  font-size: 1.9rem;
+  color: #359fc2;
+  margin-bottom: 1rem;
+}
+
+.step-card h4 {
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: #1e5f7a;
+}
+
+.step-card p {
+  font-size: 0.85rem;
+  color: #5f8195;
+}
+
+/* tabs portal */
+.portal-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-bottom: 2rem;
+}
+
+.portal-tab {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #b9dfef;
+  padding: 0.6rem 1.5rem;
+  border-radius: 3rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #346f8a;
+  cursor: pointer;
+  transition: 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.portal-tab.active {
+  background: linear-gradient(115deg, #2b9bbb, #48b3da);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 6px 16px rgba(43, 155, 187, 0.2);
+}
+
+.portal-panel {
+  display: none;
+}
+
+.portal-panel.active {
+  display: block;
+  animation: fadeUp 0.35s ease;
+}
+
+.portal-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 2rem;
+  padding: 2rem;
+  border: 1px solid rgba(95, 185, 215, 0.3);
+  box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.05);
+}
+
+.field-group {
+  margin-bottom: 1.3rem;
+}
+
+.field-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #5c8da3;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+.field-input, select.field-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: white;
+  border: 1px solid #cde6f0;
+  border-radius: 1.2rem;
+  font-size: 0.9rem;
+  transition: 0.2s;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+}
+
+.field-input:focus {
+  border-color: #62b9dc;
+  box-shadow: 0 0 0 3px rgba(98, 185, 220, 0.2);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* medicine cards soft */
+.medicine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.med-card {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 1rem 0.5rem;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid #d4eaf3;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.med-card.selected {
+  border-color: #4bb1d4;
+  background: #ebf8ff;
+  box-shadow: 0 5px 12px rgba(75, 177, 212, 0.2);
+}
+
+.med-icon {
+  font-size: 2rem;
+  margin-bottom: 0.4rem;
+}
+
+.med-name {
+  font-weight: 700;
+  color: #2b6c88;
+  font-size: 0.9rem;
+}
+
+.med-type {
+  font-size: 0.7rem;
+  color: #6f97ac;
+}
+
+.med-check {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  color: #359fc2;
+  font-size: 0.8rem;
+  display: none;
+}
+
+.med-card.selected .med-check {
+  display: block;
+}
+
+/* freq pills */
+.freq-grid, .priority-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.freq-pill, .priority-badge {
+  background: white;
+  border-radius: 2rem;
+  padding: 0.45rem 1.2rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid #cbe2ed;
+  cursor: pointer;
+  transition: 0.1s;
+  color: #326f8a;
+}
+
+.freq-pill.selected, .priority-badge.selected {
+  background: #e1f2f9;
+  border-color: #4eb1d3;
+  color: #1f6f8f;
+  font-weight: 600;
+}
+
+.submit-btn {
+  background: linear-gradient(115deg, #2b9bbb, #3fafd2);
+  border: none;
+  width: 100%;
+  padding: 0.9rem;
+  border-radius: 2rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+  margin-top: 0.5rem;
+}
+
+.submit-btn.blue {
+  background: linear-gradient(115deg, #328cad, #4fb4d9);
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(43, 155, 187, 0.3);
+}
+
+/* result and QR */
+.rx-result {
+  margin-top: 2rem;
+  background: rgba(255,255,240,0.6);
+  border-radius: 1.8rem;
+  padding: 1.5rem;
+  display: none;
+  border: 1px solid #bfe2f0;
+}
+
+.rx-result.show {
+  display: block;
+}
+
+.rx-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+
+.rx-info-item {
+  background: white;
+  border-radius: 1.2rem;
+  padding: 0.8rem;
+}
+
+.rx-info-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  color: #5097b5;
+}
+
+.rx-badge {
+  display: inline-block;
+  background: #e2f0f5;
+  padding: 0.2rem 0.8rem;
+  border-radius: 2rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #2b7c9b;
+  margin-right: 0.5rem;
+}
+
+.rx-instructions {
+  background: #f5fbfe;
+  border-radius: 1.2rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  border-left: 4px solid #4bb1d4;
+}
+
+.qr-wrapper {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding: 1.2rem;
+  background: rgba(255,255,255,0.7);
+  border-radius: 1.8rem;
+  display: none;
+}
+
+.qr-wrapper.show {
+  display: block;
+}
+
+.qr-box {
+  background: white;
+  padding: 0.8rem;
+  display: inline-block;
+  border-radius: 1.2rem;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+}
+
+.download-btn {
+  background: white;
+  border: 1px solid #abdbea;
+  border-radius: 2rem;
+  padding: 0.5rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  margin-top: 1rem;
+  cursor: pointer;
+  color: #2b7c9b;
+  font-weight: 500;
+}
+
+/* history */
+.history-item {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 1.2rem;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.6rem;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  border: 1px solid #cae3ef;
+  transition: 0.1s;
+}
+
+.history-item:hover {
+  background: white;
+  border-color: #92cbe5;
+}
+
+/* team section - clean, no unnecessary shapes */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.8rem;
+  margin-top: 2rem;
+}
+
+.team-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(6px);
+  border-radius: 2rem;
+  padding: 1.6rem 1rem;
+  text-align: center;
+  transition: all 0.2s;
+  border: 1px solid rgba(100, 185, 215, 0.3);
+}
+
+.team-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.9);
+  border-color: #8ecbe6;
+  box-shadow: 0 14px 28px rgba(43, 155, 187, 0.1);
+}
+
+.team-avatar {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(125deg, #b7e0f0, #e6f5fc);
+  border-radius: 40px;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: #348aa7;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+.team-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #195f7a;
+}
+
+.team-role {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #5696b0;
+  letter-spacing: 0.02em;
+  margin-top: 0.2rem;
+}
+
+footer {
+  border-top: 1px solid rgba(80, 160, 200, 0.2);
+  padding: 2rem;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(4px);
+  margin-top: 2rem;
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-left: 5px solid #48b3da;
+  padding: 0.8rem 1.2rem;
+  border-radius: 1.2rem;
+  font-weight: 500;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  z-index: 999;
+  font-size: 0.85rem;
+  color: #1e5f7a;
+}
+
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 700px) {
+  .navbar { padding: 0 1rem; }
+  .nav-links a:not(.nav-pill) { display: none; }
+  .field-row { grid-template-columns: 1fr; }
+  .portal-card { padding: 1.2rem; }
+  .medicine-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
 </head>
 <body>
-<div id="particles-js"></div>
+<div class="bg-soft"></div>
+<div class="bg-glow"></div>
 
-<div class="navbar">
-    <div>QR Medicine System</div>
-    <div class="nav-links">
-        <a href="#">Home</a><a href="#">About</a><a href="#">Services</a><a href="#">Contact</a>
+<nav class="navbar">
+  <div class="nav-logo"><i class="fas fa-capsules"></i> Med<span style="color:#2b9bbb;">Box</span></div>
+  <div class="nav-links">
+    <a href="#how">How It Works</a>
+    <a href="#portal">Portal</a>
+    <a href="#team">Team</a>
+    <a href="#portal" class="nav-pill">Get Started →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge"><i class="fas fa-qrcode"></i> QR-powered smart dispensing</div>
+  <h1>Precision medicine,<br> gentle delivery</h1>
+  <p>Seamless QR automation for pharmacies & clinics. Instant, error‑free medication access.</p>
+  <div class="hero-cta">
+    <button class="btn btn-primary" onclick="switchTab('doctor');scrollTo('#portal')"><i class="fas fa-stethoscope"></i> Provider Portal</button>
+    <button class="btn btn-secondary" onclick="switchTab('patient');scrollTo('#portal')"><i class="fas fa-qrcode"></i> Patient Access</button>
+  </div>
+  <div class="stats">
+    <div><div class="stat-num">99.8%</div><div class="stat-label">Accuracy</div></div>
+    <div><div class="stat-num">&lt;30s</div><div class="stat-label">Dispense time</div></div>
+    <div><div class="stat-num">256-bit</div><div class="stat-label">Encryption</div></div>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <div class="section-label">How it works</div>
+  <div class="section-title">Simple, <span>secure pharmacy flow</span></div>
+  <div class="steps-grid">
+    <div class="step-card"><div class="step-num">01</div><div class="step-icon"><i class="fas fa-prescription-bottle"></i></div><h4>Provider issues Rx</h4><p>Enter patient & medication details via the provider portal.</p></div>
+    <div class="step-card"><div class="step-num">02</div><div class="step-icon"><i class="fas fa-lock"></i></div><h4>Secure record</h4><p>Encrypted prescription with full history & traceability.</p></div>
+    <div class="step-card"><div class="step-num">03</div><div class="step-icon"><i class="fas fa-qrcode"></i></div><h4>Patient QR</h4><p>Retrieve personalized QR code with dosage & instructions.</p></div>
+    <div class="step-card"><div class="step-num">04</div><div class="step-icon"><i class="fas fa-box"></i></div><h4>Scan & dispense</h4><p>QR scanned at MedBox → medication dispensed instantly.</p></div>
+  </div>
+</section>
+
+<div class="section" id="portal">
+  <div class="section-label">Access portal</div>
+  <div class="section-title">Choose your <span>dashboard</span></div>
+  <div class="portal-tabs">
+    <button class="portal-tab active" id="tab-doctor" onclick="switchTab('doctor')"><i class="fas fa-stethoscope"></i> Provider</button>
+    <button class="portal-tab" id="tab-patient" onclick="switchTab('patient')"><i class="fas fa-user"></i> Patient</button>
+  </div>
+
+  <div class="portal-panel active" id="panel-doctor">
+    <div class="portal-card">
+      <h3 style="font-weight:700; margin-bottom:0.2rem;">New e‑Prescription</h3>
+      <p style="color:#5696b0; font-size:0.8rem; margin-bottom:1.5rem;">All fields marked * are required</p>
+      <div class="field-row"><div class="field-group"><label class="field-label">Full name *</label><input class="field-input" id="patientName" placeholder="e.g. Khaled Hassan"></div>
+      <div class="field-group"><label class="field-label">Patient ID</label><input class="field-input" id="patientId" placeholder="Optional ID"></div></div>
+      <div class="field-group"><label class="field-label">Diagnosis</label><input class="field-input" id="diagnosis" placeholder="e.g. Seasonal allergies"></div>
+      <span class="field-label">Medication *</span>
+      <div class="medicine-grid">
+        <div class="med-card" onclick="selectMedicine('Panadol','Pain & Fever','💊',this)"><div class="med-check"><i class="fas fa-check"></i></div><div class="med-icon">💊</div><div class="med-name">Panadol</div><div class="med-type">Pain relief</div></div>
+        <div class="med-card" onclick="selectMedicine('Advil','Anti-inflammatory','🔵',this)"><div class="med-check"><i class="fas fa-check"></i></div><div class="med-icon">🔵</div><div class="med-name">Advil</div><div class="med-type">Inflammation</div></div>
+        <div class="med-card" onclick="selectMedicine('Augmentin','Antibiotic','🟠',this)"><div class="med-check"><i class="fas fa-check"></i></div><div class="med-icon">🟠</div><div class="med-name">Augmentin</div><div class="med-type">Antibiotic</div></div>
+        <div class="med-card" onclick="selectMedicine('Omeprazole','Acid reflux','🟢',this)"><div class="med-check"><i class="fas fa-check"></i></div><div class="med-icon">🟢</div><div class="med-name">Omeprazole</div><div class="med-type">Stomach</div></div>
+        <div class="med-card" onclick="selectMedicine('Amoxicillin','Antibiotic','🔴',this)"><div class="med-check"><i class="fas fa-check"></i></div><div class="med-icon">🔴</div><div class="med-name">Amoxicillin</div><div class="med-type">Antibiotic</div></div>
+        <div class="med-card" onclick="selectMedicine('Cetirizine','Antihistamine','🟣',this)"><div class="med-check"><i class="fas fa-check"></i></div><div class="med-icon">🟣</div><div class="med-name">Cetirizine</div><div class="med-type">Allergy</div></div>
+      </div>
+      <div class="date-row field-row"><div class="field-group"><label class="field-label">Start date</label><input class="field-input" type="date" id="startDate"></div>
+      <div class="field-group"><label class="field-label">End date</label><input class="field-input" type="date" id="endDate"></div></div>
+      <div class="field-group"><label class="field-label">Frequency</label><div class="freq-grid" id="freqContainer"><div class="freq-pill" onclick="selectFreq('Once daily',this)">Once daily</div><div class="freq-pill" onclick="selectFreq('Twice daily',this)">Twice daily</div><div class="freq-pill" onclick="selectFreq('Three times daily',this)">Three times daily</div><div class="freq-pill" onclick="selectFreq('Every 6 hours',this)">Every 6h</div><div class="freq-pill" onclick="selectFreq('Every 8 hours',this)">Every 8h</div></div></div>
+      <div class="field-group"><label class="field-label">Priority</label><div class="priority-row"><div class="priority-badge low selected" onclick="selectPriority('Low',this)">Low</div><div class="priority-badge medium" onclick="selectPriority('Medium',this)">Medium</div><div class="priority-badge high" onclick="selectPriority('High',this)">High</div></div></div>
+      <div class="field-group"><label class="field-label">Doctor notes</label><textarea class="field-input" id="doctorNotes" rows="2" placeholder="Special instructions..."></textarea></div>
+      <div class="field-group"><label class="field-label">Prescribing doctor</label><input class="field-input" id="doctorName" placeholder="Dr. Name"></div>
+      <button class="submit-btn" onclick="savePrescription()"><i class="fas fa-save"></i> Save Prescription</button>
+      <div class="history-section" id="prescriptionHistory" style="margin-top:1.5rem; display:none;"><div class="history-title"><i class="fas fa-clock"></i> Recent Rx</div><div id="historyList"></div></div>
     </div>
+  </div>
+
+  <div class="portal-panel" id="panel-patient">
+    <div class="portal-card">
+      <h3 style="font-weight:700;">Retrieve your medicine</h3>
+      <div class="field-group"><label class="field-label">Your full name</label><input class="field-input" id="checkName" placeholder="Enter full name exactly"></div>
+      <button class="submit-btn blue" onclick="checkPatient()"><i class="fas fa-qrcode"></i> Find prescription & QR</button>
+      <div class="rx-result" id="rxResult"><div id="rxPatientName" style="font-weight:bold;"></div><div id="rxBadges"></div><div id="rxInfoGrid" class="rx-info-grid"></div><div id="rxInstructions"></div></div>
+      <div class="qr-wrapper" id="qrWrapper"><div class="qr-label"><i class="fas fa-qrcode"></i> Scan at MedBox</div><div class="qr-box" id="qrcode"></div><div class="download-btn" onclick="downloadQR()"><i class="fas fa-download"></i> Save QR</div></div>
+    </div>
+  </div>
 </div>
 
-<div class="hero">
-    <h1>Smart & Secure Automated Medicine Platform</h1>
-    <p>Access your prescribed medications safely and quickly using QR technology. Avoid waiting, reduce errors, and get your medicine anytime.</p>
-    <button class="btn doctor" onclick="showDoctor()">Access as Healthcare Provider</button>
-    <button class="btn patient" onclick="showPatient()">Access as Patient</button>
-</div>
+<section class="section" id="team">
+  <div class="section-label">The builders</div>
+  <div class="section-title">Meet the <span> innovators</span></div>
+  <div class="team-grid">
+    <div class="team-card"><div class="team-avatar"><i class="fas fa-user"></i></div><div class="team-name">Amer Alansari</div><div class="team-role">Team Leader</div></div>
+    <div class="team-card"><div class="team-avatar"><i class="fas fa-user"></i></div><div class="team-name">Mohammed Noor</div><div class="team-role"></div></div>
+    <div class="team-card"><div class="team-avatar"><i class="fas fa-user"></i></div><div class="team-name">Hossam Alharbi</div><div class="team-role"></div></div>
+    <div class="team-card"><div class="team-avatar"><i class="fas fa-user"></i></div><div class="team-name">Mohammed Alattas</div><div class="team-role"></div></div>
+  </div>
+  <div style="text-align:center; margin-top:2rem;"><i class="fas fa-circle-info" style="color:#6eb9d4;"></i> <span style="color:#568ea8;">QR Automated Medicine System · 2026</span></div>
+</section>
 
-<!-- Doctor Section -->
-<div id="doctorSection" class="section">
-<div class="card">
-<h3>Healthcare Provider Portal</h3>
-<input type="text" id="patientName" placeholder="Enter Patient Name">
-
-<h4>Select Medicine</h4>
-<div class="medicine-container">
-<div class="medicine-card" onclick="selectMedicine('Panadol', this)">
-<img src="https://dummyimage.com/100x100/27ae60/ffffff&text=Panadol"><p>Panadol</p>
-</div>
-<div class="medicine-card" onclick="selectMedicine('Advil', this)">
-<img src="https://dummyimage.com/100x100/2980b9/ffffff&text=Advil"><p>Advil</p>
-</div>
-<div class="medicine-card" onclick="selectMedicine('Augmentin', this)">
-<img src="https://dummyimage.com/100x100/e67e22/ffffff&text=Augmentin"><p>Augmentin</p>
-</div>
-</div>
-
-<h4>Select Duration</h4>
-<div class="duration-container">
-<div class="duration-card" onclick="selectDuration('1 Week', this)">1 Week</div>
-<div class="duration-card" onclick="selectDuration('2 Weeks', this)">2 Weeks</div>
-<div class="duration-card" onclick="selectDuration('1 Month', this)">1 Month</div>
-</div>
-
-<button class="btn action" onclick="savePrescription()">Save Prescription</button>
-<div id="doctorResult"></div>
-</div>
-</div>
-
-<!-- Patient Section -->
-<div id="patientSection" class="section">
-<div class="card">
-<h3>Patient Access Portal</h3>
-<input type="text" id="checkName" placeholder="Enter Your Name">
-<button class="btn action" onclick="checkPatient()">Generate My QR Code</button>
-<div id="patientResult"></div>
-<div id="qrcode"></div>
-<div id="instructions"></div>
-</div>
-</div>
-
-<!-- Team Box -->
-<div class="team-box">
-<b>Team:</b><br>
-Amer Alansari - Leader <br>Mohammed Noor<br>Hossam Alharbi<br>Mohammed Alattas
-</div>
-
-<footer>
-<p>© 2026 QR-Based Automated Medicine Box</p>
-<div class="social">
-<i class="fab fa-facebook"></i><i class="fab fa-instagram"></i><i class="fab fa-x-twitter"></i><i class="fab fa-youtube"></i>
-</div>
-</footer>
+<footer><div><div class="nav-logo" style="font-size:1.2rem;">Med<span style="color:#2b9bbb;">Box</span></div><div class="footer-copy" style="font-size:0.7rem;">© 2026 QR-based dispensing. All rights reserved.</div></div><div class="footer-social"><i class="fab fa-facebook-f" style="margin-right:1rem; color:#518cad;"></i><i class="fab fa-instagram" style="margin-right:1rem; color:#518cad;"></i><i class="fab fa-x-twitter" style="color:#518cad;"></i></div></footer>
+<div class="toast" id="toast"><i id="toastIcon"></i> <span id="toastMsg"></span></div>
 
 <script>
-particlesJS("particles-js",{particles:{number:{value:60},color:{value:"#1f3c88"},shape:{type:"circle"},opacity:{value:0.05},size:{value:4},line_linked:{enable:true,distance:120,color:"#1f3c88",opacity:0.05},move:{enable:true,speed:2}}});
-
-let database={};
-let selectedMedicine="";
-let selectedDuration="";
-
-function showDoctor(){document.getElementById("doctorSection").style.display="block";document.getElementById("patientSection").style.display="none";}
-function showPatient(){document.getElementById("patientSection").style.display="block";document.getElementById("doctorSection").style.display="none";}
-
-function selectMedicine(name, element){selectedMedicine=name;document.querySelectorAll(".medicine-card").forEach(card=>card.classList.remove("selected"));element.classList.add("selected");}
-function selectDuration(value, element){selectedDuration=value;document.querySelectorAll(".duration-card").forEach(card=>card.classList.remove("selected"));element.classList.add("selected");}
-
-function savePrescription(){
-let name=document.getElementById("patientName").value;
-if(name==""||selectedMedicine==""||selectedDuration==""){alert("Please complete all fields.");return;}
-let dosage="";
-if(selectedMedicine=="Panadol"){dosage="Take 1 tablet every 6 hours after food.";}
-if(selectedMedicine=="Advil"){dosage="Take 1 tablet every 8 hours with water.";}
-if(selectedMedicine=="Augmentin"){dosage="Take 1 tablet twice daily.";}
-database[name]={medicine:selectedMedicine,dosage:dosage,duration:selectedDuration};
-document.getElementById("doctorResult").innerHTML="<p style='color:green;font-weight:bold;'>Prescription saved successfully.</p>";
-}
-
-function checkPatient(){
-let name=document.getElementById("checkName").value;
-if(database[name]){
-let data=database[name];
-document.getElementById("patientResult").innerHTML=
-"<p><b>Medicine:</b> "+data.medicine+"</p>"+
-"<p><b>Dosage:</b> "+data.dosage+"</p>"+
-"<p><b>Duration:</b> "+data.duration+"</p>";
-document.getElementById("qrcode").innerHTML="";
-new QRCode(document.getElementById("qrcode"),{text:"Patient:"+name+" | Medicine:"+data.medicine+" | Dosage:"+data.dosage+" | Duration:"+data.duration,width:160,height:160});
-document.getElementById("instructions").innerHTML=
-"✔ Go to the dispensing box.<br>"+
-"✔ Scan the QR code displayed.<br>"+
-"✔ Confirm your name and medicine.<br>"+
-"✔ Take the medicine for "+data.duration+".<br>"+
-"✔ Follow dosage carefully: "+data.dosage+"<br>"+
-"✔ Do not skip doses and consult provider if symptoms persist.";
-document.getElementById("instructions").style.display="block";
-}else{
-document.getElementById("patientResult").innerHTML="<p style='color:red;'>No prescription found.</p>";
-document.getElementById("qrcode").innerHTML="";
-document.getElementById("instructions").style.display="none";
-}
-}
+let database = {};
+let selectedMedicine = '', selectedMedicineType = '', selectedFrequency = '', selectedPriority = 'Low';
+let prescriptionLog = [];
+const dosageMap = { 'Panadol':'Take 1-2 tablets every 4-6h. Max 8 per day.','Advil':'1 tablet every 6-8h with food.','Augmentin':'1 tablet twice daily for 7-10 days.','Omeprazole':'1 capsule 30min before breakfast.','Amoxicillin':'1 capsule three times daily.','Cetirizine':'1 tablet daily. May cause drowsiness.' };
+window.addEventListener('DOMContentLoaded',()=>{ let t=new Date(); document.getElementById('startDate').value=t.toISOString().split('T')[0]; let e=new Date(t); e.setDate(e.getDate()+7); document.getElementById('endDate').value=e.toISOString().split('T')[0]; });
+function switchTab(tab){ document.getElementById('panel-doctor').classList.toggle('active',tab==='doctor'); document.getElementById('panel-patient').classList.toggle('active',tab==='patient'); document.getElementById('tab-doctor').classList.toggle('active',tab==='doctor'); document.getElementById('tab-patient').classList.toggle('active',tab==='patient'); }
+function scrollTo(s){ document.querySelector(s).scrollIntoView({behavior:'smooth'}); }
+function selectMedicine(n,t,_,el){ selectedMedicine=n; selectedMedicineType=t; document.querySelectorAll('.med-card').forEach(c=>c.classList.remove('selected')); el.classList.add('selected'); }
+function selectFreq(v,el){ selectedFrequency=v; document.querySelectorAll('.freq-pill').forEach(p=>p.classList.remove('selected')); el.classList.add('selected'); }
+function selectPriority(v,el){ selectedPriority=v; document.querySelectorAll('.priority-badge').forEach(b=>b.classList.remove('selected')); el.classList.add('selected'); }
+function savePrescription(){ let name=document.getElementById('patientName').value.trim(); let pid=document.getElementById('patientId').value.trim(); let diag=document.getElementById('diagnosis').value.trim(); let start=document.getElementById('startDate').value; let end=document.getElementById('endDate').value; let notes=document.getElementById('doctorNotes').value.trim(); let doctor=document.getElementById('doctorName').value.trim(); if(!name||!selectedMedicine||!selectedFrequency||!start||!end){ toast('Please fill all required fields (*)','error'); return; } if(new Date(end)<new Date(start)){ toast('End date cannot be before start','error'); return; } let startD=new Date(start), endD=new Date(end); let days=Math.round((endD-startD)/(864e5)); let duration=days<=0?'1 day': days<7?days+' days': days===7?'1 week': days<30?days+' days': days===30?'1 month': Math.floor(days/30)+' month'+(days%30?` + ${days%30} days`:''); database[name]={ medicine:selectedMedicine, medicineType:selectedMedicineType, dosage:dosageMap[selectedMedicine]||'Follow prescription', frequency:selectedFrequency, start,end, days,duration, diagnosis:diag, patientId:pid, priority:selectedPriority, notes, doctor, issuedAt:new Date().toLocaleString() }; prescriptionLog.unshift({name, medicine:selectedMedicine, start, end, priority:selectedPriority}); renderHistory(); toast(`Prescription saved for ${name} ✓`,'success'); }
+function renderHistory(){ let sec=document.getElementById('prescriptionHistory'), list=document.getElementById('historyList'); if(!prescriptionLog.length){ sec.style.display='none'; return; } sec.style.display='block'; list.innerHTML=prescriptionLog.slice(0,5).map(rx=>`<div class="history-item" onclick="prefillPatient('${rx.name}')"><div><strong>${rx.name}</strong><div style="font-size:0.7rem;">${rx.medicine} · ${rx.start} → ${rx.end}</div></div><div style="font-size:0.7rem;">${rx.priority}</div></div>`).join(''); }
+function prefillPatient(name){ switchTab('patient'); document.getElementById('checkName').value=name; scrollTo('#portal'); }
+function checkPatient(){ let name=document.getElementById('checkName').value.trim(); if(!name){ toast('Enter patient name','error'); return; } let rx=database[name]; let resDiv=document.getElementById('rxResult'), qrDiv=document.getElementById('qrWrapper'), qrEl=document.getElementById('qrcode'); if(!rx){ resDiv.classList.remove('show'); qrDiv.classList.remove('show'); toast('No prescription found.','error'); return; } document.getElementById('rxPatientName').innerHTML=`<strong>${name}</strong> <span style="font-size:0.7rem;">· Active Rx</span>`; document.getElementById('rxBadges').innerHTML=`<span class="rx-badge">${rx.medicine}</span><span class="rx-badge">${rx.frequency}</span><span class="rx-badge" style="background:#e0f0f5;">${rx.priority} priority</span>`; document.getElementById('rxInfoGrid').innerHTML=`<div class="rx-info-item"><div class="rx-info-label">Medication</div>${rx.medicine}</div><div class="rx-info-item"><div class="rx-info-label">Frequency</div>${rx.frequency}</div><div class="rx-info-item"><div class="rx-info-label">Start</div>${formatNice(rx.start)}</div><div class="rx-info-item"><div class="rx-info-label">End</div>${formatNice(rx.end)}</div><div class="rx-info-item"><div class="rx-info-label">Doctor</div>${rx.doctor||'—'}</div><div class="rx-info-item"><div class="rx-info-label">Instructions</div>${rx.dosage}</div>`; let steps=[`${rx.dosage}`,`Take ${rx.frequency} from ${formatNice(rx.start)} until ${formatNice(rx.end)}.`,`Present QR at MedBox for dispensing.`, rx.notes?`Note: ${rx.notes}`:null].filter(Boolean); document.getElementById('rxInstructions').innerHTML=`<div class="rx-instructions-title"><i class="fas fa-info-circle"></i> Care steps</div>`+steps.map((s,i)=>`<div style="display:flex; gap:8px; margin-bottom:6px;"><span>${i+1}.</span><span>${s}</span></div>`).join(''); resDiv.classList.add('show'); qrEl.innerHTML=''; let qrText=`MEDBOX | Patient:${name}|Med:${rx.medicine}|Freq:${rx.frequency}|Start:${rx.start}|End:${rx.end}|Dr:${rx.doctor||''}`; new QRCode(qrEl,{text:qrText,width:160,height:160,colorDark:'#195e7a',colorLight:'#ffffff'}); qrDiv.classList.add('show'); toast('Prescription ready — QR generated','success'); }
+function formatNice(str){ if(!str) return '—'; let d=new Date(str+'T00:00:00'); return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+function downloadQR(){ let canvas=document.querySelector('#qrcode canvas'); if(!canvas){ toast('Generate QR first','error'); return; } let link=document.createElement('a'); link.download='MedBox_QR.png'; link.href=canvas.toDataURL(); link.click(); toast('QR saved','success'); }
+function toast(msg,type='success'){ let el=document.getElementById('toast'); let icon=document.getElementById('toastIcon'); let txt=document.getElementById('toastMsg'); el.classList.remove('show'); icon.className=type==='success'?'fas fa-check-circle':'fas fa-exclamation-triangle'; txt.innerText=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),3000); }
 </script>
 </body>
 </html>
+```
